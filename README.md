@@ -1,5 +1,6 @@
 # geopulsebot
 AI powered Autonomous geopolitical News Agent that fetches, summarizes, and delivers top geopolitical news.
+
 What It Does?
 - Fetches latest **geopolitical news** using the GNews API
 - Summarizes each article into **2–3 lines** using Azure OpenAI (GPT-4o)
