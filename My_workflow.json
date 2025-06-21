@@ -1,0 +1,215 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "geopolitics-news",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2a15fa72-604e-4d88-a5f4-f22424c769bf",
+      "name": "Webhook",
+      "webhookId": "3c193925-d6d1-4fe1-a596-9acf52f59205"
+    },
+    {
+      "parameters": {
+        "url": "https://gnews.io/api/v4/search?q=geopolitics&lang=en&token=e473eeca93bf45eaa5ac501555a099cc",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "ab5cf810-6de5-42be-8d9f-6ca637e7b8cb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "articles",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "7576d476-5435-4221-b0f6-f383c956e476",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mindcraft-kapidhwaj-openai-api-key.openai.azure.com/openai/deployments/mindcraft-gpt4o/chat/completions?api-version=2024-12-01-preview",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "api-key",
+              "value": "8WxLaoodYxa7XSK2rCiWuP3nqwWUShSUVd5FrjEYSqqROfIwc0qzJQQJ99BFAC77bzfXJ3w3AAABACOGweqQ"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "messages[0][role]",
+              "value": "system"
+            },
+            {
+              "name": "messages[0][content]",
+              "value": "You are an assistant that summarizes news articles in 2–3 lines."
+            },
+            {
+              "name": "messages[1][role]",
+              "value": "user"
+            },
+            {
+              "name": "messages[1][content]",
+              "value": "=Summarize this article:\\nTitle: {{ $json.title }}\\nDescription: {{ $json.description }}\\nContent: {{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        0
+      ],
+      "id": "bed53c22-5fb0-4a42-96db-84ea5185ccac",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "67fe0c30-5c91-4543-940a-336241b8271a",
+              "name": "summary",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        840,
+        0
+      ],
+      "id": "14202aaf-c442-46dc-a449-a02815ebeed0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discordapp.com/api/webhooks/1385952627141120011/RdtzSX0OW0Hixs4wcpINFjpT-nuyfl9nN7Rs_km9AQdEYpZz4L0Jx92L_5xId_HllO1h",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"**🗞️ Daily Geopolitics Summary:**\\n\\n{{ $json.summary }}\"\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        0
+      ],
+      "id": "5c26aabd-1455-4a2a-b913-a2b1d6b84c15",
+      "name": "send to discord"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "send to discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "15e78178-5bf8-45ca-8e24-3a2b6272b229",
+  "meta": {
+    "instanceId": "4a4dc152b5d5d91501b75ba8f727851a6486dd5db7bf998733b34d22b287b9ea"
+  },
+  "id": "NhwuNATEU2kOYhoc",
+  "tags": []
+}
